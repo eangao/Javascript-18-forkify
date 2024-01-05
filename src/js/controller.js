@@ -183,3 +183,8 @@ showRecipe();
 // window.addEventListener('load', showRecipe);
 
 ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, showRecipe));
+
+/////////////////////////////////////////////////////////////
+// The MVC Architecture
+/////////////////////////////////////////////////////////////
+// SEE PDF LECTURE AND VIDEO
