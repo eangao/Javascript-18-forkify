@@ -3,8 +3,6 @@ import recipeView from './views/recipeView.js';
 import 'core-js/stable'; // polyfilling everything else.
 import 'regenerator-runtime'; // polyfilling async/await
 
-const recipeContainer = document.querySelector('.recipe');
-
 // https://forkify-api.herokuapp.com/v2
 
 ///////////////////////////////////////
@@ -24,20 +22,17 @@ const controlRecipes = async function () {
     // 2) Rendering recipe
     recipeView.render(model.state.recipe);
   } catch (error) {
-    alert(error);
+    console.log(error);
   }
 };
 
-controlRecipes();
-
-// window.addEventListener('hashchange', controlRecipes);
-// window.addEventListener('load', controlRecipes);
-
-['hashchange', 'load'].forEach(ev =>
-  window.addEventListener(ev, controlRecipes)
-);
-
-/////////////////////////////////////////////////////////////
-// The MVC Architecture
-/////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+// Event Handlers in MVC: Publisher-Subscriber Pattern
+///////////////////////////////////////////////////////////
 // SEE PDF LECTURE AND VIDEO
+
+const init = function () {
+  recipeView.addHandlerRender(controlRecipes);
+};
+
+init();
