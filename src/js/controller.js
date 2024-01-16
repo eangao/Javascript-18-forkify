@@ -1,5 +1,6 @@
 import * as model from './model.js';
 import recipeView from './views/recipeView.js';
+import searchView from './views/searchView.js';
 import 'core-js/stable'; // polyfilling everything else.
 import 'regenerator-runtime'; // polyfilling async/await
 
@@ -26,13 +27,29 @@ const controlRecipes = async function () {
   }
 };
 
+const controlSearchResults = async function () {
+  try {
+    // 1) Get serach queary
+    const query = searchView.getQuery();
+
+    if (!query) return;
+
+    // 2) Load search
+    await model.loadSearchResults(query);
+
+    // 3) Render results
+    console.log(model.state.search.results);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 ///////////////////////////////////////////////////////////
 // Event Handlers in MVC: Publisher-Subscriber Pattern
 ///////////////////////////////////////////////////////////
 // SEE PDF LECTURE AND VIDEO
-
 const init = function () {
   recipeView.addHandlerRender(controlRecipes);
+  searchView.addHandlerSearch(controlSearchResults);
 };
-
 init();
