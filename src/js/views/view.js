@@ -33,6 +33,81 @@ export default class View {
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
 
+  update(data) {
+    // Remove this after implementing - this can cause error if you reload the page
+    // if (!data || (Array.isArray(data) && data.length === 0))
+    //   return this.renderError();
+
+    this._data = data;
+
+    const newMarkup = this._generateMarkup();
+
+    //     So here we now have the Markup
+    // but that is just a string.
+    // And so that is gonna be very difficult to compare
+    // to the DOM elements that we currently have
+    // on the page.
+    // And so to fix that problem,
+    // we can actually use a nice trick,
+    // which is to basically convert this Markup string
+    // to a DOM object
+    // that's living in the memory
+    // and that we can then use
+    // to compare with the actual DOM that's on the page.
+    //     So this will create something called a range,
+    // and on the range, we can then call yet another method,
+    // which is called createContextualFragment.
+    // And so this is where we then pass in the string
+    // of Markup, so like a string of HTML.
+    // And so as I said before,
+    // this method will then convert that string
+    // into real DOM Node objects.
+    // So basically, newDOM here
+    // will become like a big object,
+    // which is like a virtual DOM.
+    // So a DOM that is not really living on the page
+    // but which lives in our memory.
+    const newDOM = document.createRange().createContextualFragment(newMarkup);
+    const newElements = Array.from(newDOM.querySelectorAll('*'));
+    const curElements = Array.from(this._parentElement.querySelectorAll('*'));
+    console.log(curElements);
+    console.log(newElements);
+
+    newElements.forEach((newEl, i) => {
+      const curEl = curElements[i];
+      // console.log(curEl, newEl.isEqualNode(curEl));
+
+      // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
+      // UPdates changed TEXT
+      if (
+        !newEl.isEqualNode(curEl) &&
+        newEl.firstChild.nodeValue.trim() !== ''
+      ) {
+        // console.log('💥💥💥', newEl.firstChild?.nodeValue.trim() !== '');
+        curEl.textContent = newEl.textContent;
+      }
+
+      //Updates changed ATTRIBUTES
+      if (!newEl.isEqualNode(curEl)) {
+        // console.log(newEl.attributes);
+        // console.log(Array.from(newEl.attributes));
+        Array.from(newEl.attributes).forEach(attr =>
+          curEl.setAttribute(attr.name, attr.value)
+        );
+      }
+
+      //       Now, this algorithm here
+      // is probably not the most robust one
+      // and so maybe it might not be the best algorithm
+      // to really use in the real world
+      // unless you have like a kind
+      // of small application, like this one.
+      // But for a really huge application,
+      // probably this algorithm is not performant enough
+      // and might not be good enough.
+    });
+  }
+
   _clear() {
     this._parentElement.innerHTML = '';
   }
