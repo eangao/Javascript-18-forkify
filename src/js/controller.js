@@ -82,13 +82,24 @@ const controlServings = function (newServings) {
   recipeView.update(model.state.recipe);
 };
 
+controlAddBookmark = function () {
+  if (!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe);
+  else if (model.state.recipe.bookmarked)
+    model.deleteBookmark(model.state.recipe.id);
+
+  console.log(model.state.recipe);
+  recipeView.update(model.state.recipe);
+};
+
 ///////////////////////////////////////////////////////////
 // Event Handlers in MVC: Publisher-Subscriber Pattern
+//Event Delegation
 ///////////////////////////////////////////////////////////
 // SEE PDF LECTURE AND VIDEO
 const init = function () {
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
+  recipeView.addHandlerAddBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 };
