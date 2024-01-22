@@ -21,23 +21,25 @@ import 'regenerator-runtime'; // polyfilling async/await
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
-    console.log(id);
 
     if (!id) return;
 
     recipeView.renderSpinner();
 
-    // 0) Update results view to mark selected search result
+    // 1) Update results view to mark selected search result
     resultsView.update(model.getSearchResultsPage());
+
+    // 2) Updating bookmarks view
     bookmarksView.update(model.state.bookmarks);
 
-    // 1) loading recipe
+    // 3) loading recipe
     await model.loadRecipe(id);
 
-    // 2) Rendering recipe
+    // 4) Rendering recipe
     recipeView.render(model.state.recipe);
   } catch (err) {
     recipeView.renderError();
+    console.error(err);
   }
 };
 
@@ -66,8 +68,6 @@ const controlSearchResults = async function () {
 };
 
 const controlPagination = function (goToPage) {
-  console.log(goToPage);
-
   // 1) Render new results
   resultsView.render(model.getSearchResultsPage(goToPage));
 
@@ -97,16 +97,22 @@ controlAddBookmark = function () {
   bookmarksView.render(model.state.bookmarks);
 };
 
+const controlBookmarks = function () {
+  bookmarksView.render(model.state.bookmarks);
+};
+
 ///////////////////////////////////////////////////////////
 // Event Handlers in MVC: Publisher-Subscriber Pattern
 //Event Delegation
 ///////////////////////////////////////////////////////////
 // SEE PDF LECTURE AND VIDEO
 const init = function () {
+  bookmarksView.addHandlerRender(controlBookmarks);
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
   recipeView.addHandlerAddBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 };
+
 init();
