@@ -1,5 +1,5 @@
-import { API_URL, RESULT_PER_PAGE } from './config.js';
-import { getJSON } from './helpers.js';
+import { API_URL, RESULT_PER_PAGE, KEY } from './config.js';
+import { getJSON, sendJSON } from './helpers.js';
 
 export const state = {
   recipe: {},
@@ -12,22 +12,49 @@ export const state = {
   bookmarks: [],
 };
 
+const createRecipeObject = function (data) {
+  const { recipe } = data.data;
+
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    publisher: recipe.publisher,
+    sourceUrl: recipe.source_url,
+    image: recipe.image_url,
+    servings: recipe.servings,
+    cookingTime: recipe.cooking_time,
+    ingredients: recipe.ingredients,
+
+    //     So remember that the end operator short-circuits.
+    // So if recipe.key is a faulty value,
+    // so if it doesn't exist
+    // well, then nothing happens here, right.
+    // And so then destructuring here, well does basically nothing.
+    // Now, if this actually is some value,
+    // then the second part of the operator
+    // is executed and returned.
+    // And so in that case, it is this object
+    // here basically that is going to be returned.
+    // And so then this whole expression will become that object.
+    // And so then we can spread that object
+    // to basically put the values here.
+    // And so that will then be the same
+    // as if the values would be out here like this,
+    // key recipe.key.
+    // But again, only in case that the key actually does exist.
+    // And so this is a very nice trick
+    // to conditionally add properties to an object.
+    // So keep this one in mind,
+    // now it is a very handy trick sometimes.
+    ...(recipe.key && { key: recipe.key }),
+  };
+};
+
 export const loadRecipe = async function (id) {
   try {
     const data = await getJSON(`${API_URL}${id}`);
 
-    const { recipe } = data.data;
-
-    state.recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceUrl: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-    };
+    state.recipe = createRecipeObject(data);
 
     //     So it will be loaded from the API, right?
     // We are not loading this recipe from the bookmarks.
@@ -159,3 +186,42 @@ const clearBookmarks = function () {
   localStorage.clear('bookmarks');
 };
 // clearBookmarks();
+
+export const uploadRecipe = async function (newRecipe) {
+  try {
+    // Centries onvert object to array
+    const ingredients = Object.entries(newRecipe)
+      .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+      .map(ing => {
+        const ingArr = ing[1].replaceAll(' ', '').split(',');
+
+        if (ingArr.length !== 3)
+          throw new Error(
+            'Wrong ingredient format! Please use the correct format :)'
+          );
+
+        const [quantity, unit, description] = ingArr;
+
+        return { quantity: quantity ? +quantity : null, unit, description };
+      });
+
+    const recipe = {
+      title: newRecipe.title,
+      source_url: newRecipe.sourceUrl,
+      image_url: newRecipe.image,
+      publisher: newRecipe.publisher,
+      cooking_time: +newRecipe.cookingTime,
+      servings: +newRecipe.servings,
+      ingredients,
+    };
+
+    const data = await sendJSON(`${API_URL}?key=${KEY}`, recipe);
+
+    state.recipe = createRecipeObject(data);
+    addBookmark(state.recipe);
+
+    console.log(data);
+  } catch (err) {
+    throw err;
+  }
+};
