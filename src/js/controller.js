@@ -157,3 +157,6 @@ init();
 // Wrapping Up: Final Considerations
 ///////////////////////////////////////////////////////
 // SEE PDF LECTURE and videos
+
+//////////////
+// https://education.github.com/git-cheat-sheet-education.pdf
